@@ -16,6 +16,7 @@ The minicrypto backend uses [micro-ecc](https://github.com/kmackay/micro-ecc) an
 * [Sending Data](#sending-data)
 * [Receiving Data](#receiving-data)
 * [Sending an Alert](#sending-an-alert)
+* [Server Name Indication](#server-name-indication)
 * Resumption
 * Using Early Data
 * Error Codes
@@ -277,3 +278,10 @@ int handle_input(ptls_t *tls, const uint8_t *input, size_t input_size)
 
 If something goes wrong during handshake, `ptls_handshake` will implicitly call the function to notify the peer of the error that has occurred.
 The application is responsible for calling the function for sending an alert in case of other occasions (including graceful shutdown of a TLS connection).
+
+## Server Name Indication
+
+If the client intends to send a Server Name Indication extension, it should call `ptls_set_server_name` prior to initiating a TLS handshake.
+
+A server can obtain the value of the extension provided by the client by calling `ptls_get_server_name`. The function will return `NULL` in case the client did not use the extension.
+
