@@ -111,7 +111,7 @@ The output buffer is supplied as a pointer to `ptls_buffer_t`.
 `ptls_buffer_init` is the function that initializes the buffer object.
 The object either contains a buffer that is supplied from the application (by passing a non-zero sized buffer as an argument to `ptls_buffer_init`), or a dynamically allocated buffer managed by itself. In case of the latter, the `is_allocated` flag of the object is set to a non-zero value, and the application is responsible for calling `ptls_buffer_dispose` so that the allocated chunk of memory can be freed.
 
-The following code snippet sends ClientHello.
+The following code snippet starts a TLS handshake on the client side (i.e. sends ClientHello).
 
 ```c
 ptls_buffer_t sendbuf;
@@ -124,4 +124,40 @@ assert(ret == PTLS_ERROR_IN_PROGRESS);
 send_fully(fd, sendbuf.base, sendbuf.off);
 // dispose the buffer
 ptls_buffer_dispose(&sendbuf);
+```
+
+The code below proceeds the handshake until it completes (either on the server-side or on the client-side).
+
+```c
+uint8_t recvbuf[8192];
+ssize_t roff, rret;
+ptls_buffer_t sendbuf;
+int ret;
+
+do {
+    // read data from socket
+    while ((rret = read(fd, recvbuf, sizeof(recvbuf)) == -1 && errno == EINTR)
+        ;
+    if (rret == 0)
+        goto Closed;
+    // repeatedly call ptls_handshake (and send the output) until handshake completes
+    // or when the function consumes all input
+    roff = 0;
+    do {
+        size_t consumed = rret - roff;
+        ptls_buffer_init(&sendbuf, "", 0);
+        ret = ptls_handshake(tls, &sendbuf, recvbuf + roff, &consumed, NULL);
+        if ((ret == 0 || ret == PTLS_ERROR_IN_PROGRESS) && sendbuf.off != 0) {
+            if (!send_fully(fd, sendbuf.base, sendbuf.off))
+                goto Closed;
+        }
+        ptls_buffer_dispose(&sendbuf);
+    } while (ret == PTLS_ERROR_IN_PROGRESS && rret != roff);
+} while (ret == PTLS_ERROR_IN_PROGRESS);
+
+if (ret == 0) {
+    // handshake succeeded (and we might have some application data after recvbuf + roff
+} else {
+    // handshake failed
+}
 ```
