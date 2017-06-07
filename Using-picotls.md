@@ -1,6 +1,7 @@
 ## Table of Contents
 
 * [Background Information](#background-information)
+* [The output buffer]
 * [Initializing the Context](#initializing-the-context)
   * [Initializing a Client Context](#initializing-a-client-context)
   * [Initializing a Server Context](#initializing-a-server-context)
@@ -19,6 +20,33 @@ Picotls implements the [TLS 1.3 protocol](https://tlswg.github.io/tls13-spec/).
 The library relies on either of the two backends for the cryptographic operations.
 The OpenSSL backend uses libcrypto (the crypto library part of OpenSSL) for the operations.
 The minicrypto backend uses [micro-ecc](https://github.com/kmackay/micro-ecc) and [cifra](https://github.com/ctz/cifra).
+
+## The Output Buffer
+
+Picotls uses a structured output buffer called `ptls_buffer_t` throughout the API that it provides.
+
+By using `ptls_buffer_t`, applications can rely on picotls to allocate space for buffers, or can supply a buffer to avoid extra copying of data as well the cost of memory allocation.
+
+`ptls_buffer_init` is the function that initializes the buffer object. When calling the function, the application optionally supplies a buffer owned by the application.
+Picotls will at first try to fill into the buffer supplied by the application.
+If the size of the buffer supplied by the application turns out to be too small, picotls will try to dynamically allocate a chunk of memory and set the `is_allocated` flag of the object to 1.
+If the flag is set to a non-zero value, applications must call `ptls_buffer_dispose` to release the memory after handling the data stored in the buffer.
+Applications can also call `ptls_buffer_dispose` for a buffer that does not have the flag set, however it should be noted that the memory block that the buffer points to will be zero-cleared by calling the function.
+
+The following example illustrates the easiest way of using `ptls_buffer_t`.
+
+```c
+ptls_buffer_t sendbuf;
+
+// supply a zero-sized application buffer (i.e. request use of dynamically allocated buffer)
+ptls_buffer_init(&sendbuf, "", 0);
+// encrypt application data
+ret = ptls_send(tls, &sendbuf, "hello world", 11);
+// send encrypted data
+write(fd, sendbuf.base, sendbuf.off);
+// dispose memory associated to the buffer
+ptls_buffer_dispose(&sendbuf);
+```
 
 ## Initializing the Context
 
@@ -107,10 +135,6 @@ Note that you need to call `ptls_send_alert` to send a closure alert before clos
 `ptls_handshake` function performs the handshake. It consumes _some_ of the supplied input, and optionally pushes some response to the send buffer which is also supplied as an argument to the function.
 
 The input must be zero-sized for the first call to the handshake function on the client-side, since it is the responsibility of the client to start the handshake.
-
-The output buffer is supplied as a pointer to `ptls_buffer_t`.
-`ptls_buffer_init` is the function that initializes the buffer object.
-The object either contains a buffer that is supplied from the application (by passing a non-zero sized buffer as an argument to `ptls_buffer_init`), or a dynamically allocated buffer managed by itself. In case of the latter, the `is_allocated` flag of the object is set to a non-zero value, and the application is responsible for calling `ptls_buffer_dispose` so that the allocated chunk of memory can be freed.
 
 The following code snippet starts a TLS handshake on the client side (i.e. sends ClientHello).
 
