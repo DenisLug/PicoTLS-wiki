@@ -1,4 +1,16 @@
-## Initializing the context
+## Table of Contents
+
+* Initializing the Context
+ * Initializing a Client Context
+ * Initializing a Server Context
+* Creating / Destroying a Connection Object
+* Performing a Handshake
+* Send / Receive
+* Sending an Alert
+* Resumption
+* Using Early Data
+
+## Initializing the Context
 
 `ptls_context_t` is an object that stores the context of how a TLS connection should be created and used. The context object is shared among multiple TLS connections.
 
