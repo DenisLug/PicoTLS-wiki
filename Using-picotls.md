@@ -7,6 +7,7 @@ The minicrypto backend uses [micro-ecc](https://github.com/kmackay/micro-ecc) an
 ## Table of Contents
 
 * [The Output Buffer](#the-output-buffer)
+  * [Packetization and Zero-copy)(#packetization-and-zero-copy)
 * [Initializing the Context](#initializing-the-context)
   * [Initializing a Client Context](#initializing-a-client-context)
   * [Initializing a Server Context](#initializing-a-server-context)
@@ -44,6 +45,8 @@ write(fd, sendbuf.base, sendbuf.off);
 // dispose memory associated to the buffer
 ptls_buffer_dispose(&sendbuf);
 ```
+
+### Packetization and Zero-copy
 
 It is possible to obtain the per record overhead imposed by TLS framing and AEAD by calling `ptls_get_record_overhead`.
 The following example uses the function to obtain the exact size of payload that fits in a single packet, then uses a stack-based memory block for encrypting and sending the data.
