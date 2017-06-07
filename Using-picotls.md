@@ -1,7 +1,7 @@
 ## Table of Contents
 
 * [Background Information](#background-information)
-* [The output buffer](#the-output-buffer)
+* [The Output Buffer](#the-output-buffer)
 * [Initializing the Context](#initializing-the-context)
   * [Initializing a Client Context](#initializing-a-client-context)
   * [Initializing a Server Context](#initializing-a-server-context)
@@ -222,7 +222,7 @@ The last argument of `ptls_handshake` can be used to set and / or obtain additio
 
 ```c
 uint8_t *input = ...;
-size_t input_len = ...;
+size_t input_size = ...;
 
 int ret = ptls_send(tls, &sendbuf, input, input_size);
 assert(ret == 0);
