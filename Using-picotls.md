@@ -1,6 +1,6 @@
 Picotls implements the [TLS 1.3 protocol](https://tlswg.github.io/tls13-spec/).
 
-The library relies on either of the two backends for the cryptographic operations.
+The library relies on either of the two backends for cryptographic operations.
 The [OpenSSL](https://www.openssl.org) backend uses libcrypto (the crypto library part of OpenSSL) for the operations.
 The minicrypto backend uses [micro-ecc](https://github.com/kmackay/micro-ecc) and [cifra](https://github.com/ctz/cifra).
 
