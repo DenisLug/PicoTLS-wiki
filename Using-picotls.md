@@ -115,13 +115,17 @@ The following code snippet starts a TLS handshake on the client side (i.e. sends
 
 ```c
 ptls_buffer_t sendbuf;
-// initialize sendbuf to use dynamically allocated buffer (by supplying a zero-sized buffer)
+// initialize sendbuf to use dynamically allocated buffer (by supplying a zero-
+// sized buffer)
 ptls_buffer_init(&sendbuf, "", 0);
 // start the handshake
 int ret = ptls_handshake(tls, &sendbuf, NULL, NULL, NULL);
 assert(ret == PTLS_ERROR_IN_PROGRESS);
 // send data in send buffer
-send_fully(fd, sendbuf.base, sendbuf.off);
+if (!send_fully(fd, sendbuf.base, sendbuf.off)) {
+    ptls_buffer_dispose(&sendbuf);
+    goto Closed;
+}
 // dispose the buffer
 ptls_buffer_dispose(&sendbuf);
 ```
@@ -148,8 +152,10 @@ do {
         ptls_buffer_init(&sendbuf, "", 0);
         ret = ptls_handshake(tls, &sendbuf, recvbuf + roff, &consumed, NULL);
         if ((ret == 0 || ret == PTLS_ERROR_IN_PROGRESS) && sendbuf.off != 0) {
-            if (!send_fully(fd, sendbuf.base, sendbuf.off))
+            if (!send_fully(fd, sendbuf.base, sendbuf.off)) {
+                ptls_buffer_dispose(&sendbuf);
                 goto Closed;
+            }
         }
         ptls_buffer_dispose(&sendbuf);
     } while (ret == PTLS_ERROR_IN_PROGRESS && rret != roff);
