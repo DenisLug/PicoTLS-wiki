@@ -8,7 +8,7 @@
 * [Creating / Destroying a Connection Object](#creating--destroying-a-connection-object)
 * [Performing a Handshake](#performing-a-handshake)
 * [Sending Data](#sending-data)
-* Receiving Data
+* [Receiving Data](#receiving-data)
 * Sending an Alert
 * Resumption
 * Using Early Data
