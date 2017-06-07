@@ -218,7 +218,7 @@ The last argument of `ptls_handshake` can be used to set and / or obtain additio
 
 ## Sending Data
 
-`pls_send` accepts a input block and appends encrypted output to the send buffer (as more than one TLS record).
+`ptls_send` accepts a input block and appends encrypted output to the send buffer (as more than one TLS record).
 
 ```c
 uint8_t *input = ...;
@@ -228,4 +228,37 @@ int ret = ptls_send(tls, &sendbuf, input, input_size);
 assert(ret == 0);
 send_fully(fd, sendbuf.base, sendbuf.off);
 ptls_buffer_dispose(&sendbuf);
+```
+
+## Receiving Data
+
+`ptls_receive` consumes _some_ of the input and decrypts _at most one_ TLS record.
+
+`handle_input` function in the following example consumes all input and processes the decrypted data.
+
+```c
+int handle_input(ptls_t *tls, const uint8_t *input, size_t input_size)
+{
+    size_t input_off = 0;
+    ptls_buffer_t plaintextbuf;
+    int ret;
+
+    if (input_size == 0)
+        return 0;
+
+    ptls_buffer_init(&plaintextbuf, "", 0);
+
+    do {
+        size_t consumed = input_size - input_off;
+        ret = ptls_receive(tls, &plaintextbuf, input + input_off, &consumed);
+        input_off += consumed;
+    } while (ret == 0 && input_off < input_size);
+
+    if (ret == 0)
+        ret = handle_decrypted_data(plaintextbuf.base, plaintextbuf.off);
+
+    ptls_buffer_dispose(&plaintextbuf);
+
+    return ret;
+}
 ```
