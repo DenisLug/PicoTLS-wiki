@@ -4,7 +4,7 @@
 * [Initializing the Context](#initializing-the-context)
   * [Initializing a Client Context](#initializing-a-client-context)
   * [Initializing a Server Context](#initializing-a-server-context)
-* [Creating / Destroying a Connection Object](#creating--destroying-a-connection-object]
+* [Creating / Destroying a Connection Object](#creating--destroying-a-connection-object)
 * Performing a Handshake
 * Send / Receive
 * Sending an Alert
