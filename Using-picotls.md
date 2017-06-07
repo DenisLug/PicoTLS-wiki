@@ -95,7 +95,7 @@ The first argument is the pointer to the context.
 The second argument is a boolean indicating the side of the connection (0: client, 1 : server).
 
 ```c
-ptls_t *conn = ptls_new(&ctx, is_server);
+ptls_t *tls = ptls_new(&ctx, is_server);
 ```
 
 `ptls_free` should be called to release the resources allocated for the connection.
@@ -110,3 +110,18 @@ The input must be zero-sized for the first call to the handshake function on the
 The output buffer is supplied as a pointer to `ptls_buffer_t`.
 `ptls_buffer_init` is the function that initializes the buffer object.
 The object either contains a buffer that is supplied from the application (by passing a non-zero sized buffer as an argument to `ptls_buffer_init`), or a dynamically allocated buffer managed by itself. In case of the latter, the `is_allocated` flag of the object is set to a non-zero value, and the application is responsible for calling `ptls_buffer_dispose` so that the allocated chunk of memory can be freed.
+
+The following code snippet sends ClientHello.
+
+```c
+ptls_buffer_t sendbuf;
+// initialize sendbuf to use dynamically allocated buffer (by supplying a zero-sized buffer)
+ptls_buffer_init(&sendbuf, "", 0);
+// start the handshake
+int ret = ptls_handshake(tls, &sendbuf, NULL, NULL, NULL);
+assert(ret == PTLS_ERROR_IN_PROGRESS);
+// send data in send buffer
+send_fully(fd, sendbuf.base, sendbuf.off);
+// dispose the buffer
+ptls_buffer_dispose(&sendbuf);
+```
