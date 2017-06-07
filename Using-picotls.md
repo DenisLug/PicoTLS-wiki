@@ -6,7 +6,6 @@ The minicrypto backend uses [micro-ecc](https://github.com/kmackay/micro-ecc) an
 
 ## Table of Contents
 
-* [Background Information](#background-information)
 * [The Output Buffer](#the-output-buffer)
 * [Initializing the Context](#initializing-the-context)
   * [Initializing a Client Context](#initializing-a-client-context)
