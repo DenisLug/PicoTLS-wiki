@@ -100,3 +100,9 @@ ptls_t *conn = ptls_new(&ctx, is_server);
 
 `ptls_free` should be called to release the resources allocated for the connection.
 Note that you need to call `ptls_send_alert` to send a closure alert before closing the underlying connection and freeing the resources.
+
+## Performing a Handshake
+
+`ptls_handshake` function performs the handshake. It consumes _some_ of the supplied input, and optionally pushes some response to the send buffer which is also supplied as an argument to the function.
+
+The input must be zero-sized for the first call to the handshake on the client-side, since it is the responsibility of the client to start the handshake.
