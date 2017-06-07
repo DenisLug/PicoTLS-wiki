@@ -1,7 +1,7 @@
 ## Table of Contents
 
 * [Background Information](#background-information)
-* [The output buffer]
+* [The output buffer](#the-output-buffer)
 * [Initializing the Context](#initializing-the-context)
   * [Initializing a Client Context](#initializing-a-client-context)
   * [Initializing a Server Context](#initializing-a-server-context)
@@ -46,6 +46,25 @@ ret = ptls_send(tls, &sendbuf, "hello world", 11);
 write(fd, sendbuf.base, sendbuf.off);
 // dispose memory associated to the buffer
 ptls_buffer_dispose(&sendbuf);
+```
+
+The following example supplies stack-based memory (allocated within the application) to avoid the cost of memory allocation.
+
+```c
+int send_encrypted_packet(int fd, ptls_t *tls, const void *data, size_t len)
+{
+    size_t rawbuflen = len + ptls_get_record_overhead(tls);
+    uint8_t rawbuf[rawbuflen];
+    ptls_buffer_t sendbuf;
+    int ret;
+
+    ptls_buffer_init(&sendbuf, rawbuf, rawbuflen);
+    if ((ret = ptls_send(tls, &sendbuf, data, len) != 0)
+        return ret;
+    assert(!sendbuf.is_allocated);
+    assert(sendbuf.base == rawbuf);
+    return send_fully(fd, rawbuf, sendbuf.len);
+}
 ```
 
 ## Initializing the Context
