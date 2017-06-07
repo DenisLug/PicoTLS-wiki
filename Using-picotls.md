@@ -18,6 +18,7 @@ The minicrypto backend uses [micro-ecc](https://github.com/kmackay/micro-ecc) an
 * [Sending an Alert](#sending-an-alert)
 * Resumption
 * Using Early Data
+* Error Codes
 
 ## The Output Buffer
 
