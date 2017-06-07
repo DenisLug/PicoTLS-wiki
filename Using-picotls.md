@@ -140,8 +140,8 @@ do {
         ;
     if (rret == 0)
         goto Closed;
-    // repeatedly call ptls_handshake (and send the output) until handshake completes
-    // or when the function consumes all input
+    // repeatedly call ptls_handshake (and send the output) until handshake
+    // completes or when the function consumes all input
     roff = 0;
     do {
         size_t consumed = rret - roff;
@@ -156,7 +156,8 @@ do {
 } while (ret == PTLS_ERROR_IN_PROGRESS);
 
 if (ret == 0) {
-    // handshake succeeded (and we might have some application data after recvbuf + roff
+    // handshake succeeded (and we might have some application data after
+    // recvbuf + roff
 } else {
     // handshake failed
 }
