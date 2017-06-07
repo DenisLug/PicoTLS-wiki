@@ -20,6 +20,8 @@ ctx.key_exchanges = ptls_openssl_key_exchanges;
 ctx.cipher_suites = ptls_openssl_cipher_suites;
 ```
 
+### Initializing a Client Context
+
 If you are implementing a client, you should also setup the `verify_certificate` property.
 For OpenSSL backend, you can do it by calling `ptls_openssl_init_verify_certificate` and then setting the pointer to the initialized object as a member of the context.
 The second argument of the function is a pointer to a X509 store that contains the trusted CAs. If the supplied value is NULL, the default store will be used.
