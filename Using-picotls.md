@@ -148,9 +148,10 @@ do {
     // completes or when the function consumes all input
     roff = 0;
     do {
-        size_t consumed = rret - roff;
         ptls_buffer_init(&sendbuf, "", 0);
+        size_t consumed = rret - roff;
         ret = ptls_handshake(tls, &sendbuf, recvbuf + roff, &consumed, NULL);
+        roff += consumed;
         if ((ret == 0 || ret == PTLS_ERROR_IN_PROGRESS) && sendbuf.off != 0) {
             if (!send_fully(fd, sendbuf.base, sendbuf.off)) {
                 ptls_buffer_dispose(&sendbuf);
