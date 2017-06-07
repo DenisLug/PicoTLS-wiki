@@ -1,8 +1,8 @@
 ## Table of Contents
 
 * [Initializing the Context](#initializing-the-context)
- * Initializing a Client Context
- * Initializing a Server Context
+  * [Initializing a Client Context](#initializing-a-client-context)
+  * [Initializing a Server Context](#initializing-a-server-context)
 * Creating / Destroying a Connection Object
 * Performing a Handshake
 * Send / Receive
