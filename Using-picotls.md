@@ -45,22 +45,29 @@ write(fd, sendbuf.base, sendbuf.off);
 ptls_buffer_dispose(&sendbuf);
 ```
 
-The following example supplies stack-based memory (allocated within the application) to avoid the cost of memory allocation.
+It is possible to obtain the per record overhead imposed by TLS framing and AEAD by calling `ptls_get_record_overhead`.
+The following example uses the function to obtain the exact size of payload that fits in a single packet, then uses a stack-based memory block for encrypting and sending the data.
 
 ```c
-int send_encrypted_packet(int fd, ptls_t *tls, const void *data, size_t len)
+int send_encrypted_packet(int fd, ptls_t *tls, size_t mtu, struct iovec_t *data)
 {
-    size_t rawbuflen = len + ptls_get_record_overhead(tls);
-    uint8_t rawbuf[rawbuflen];
+    size_t payload_size = min(data->len, mtu - ptls_get_record_overhead(tls));
     ptls_buffer_t sendbuf;
-    int ret;
+    uint8_t rawbuf[mtu];
 
-    ptls_buffer_init(&sendbuf, rawbuf, rawbuflen);
-    if ((ret = ptls_send(tls, &sendbuf, data, len) != 0)
+    // encrypt payload_size bytes
+    ptls_buffer_init(&sendbuf, rawbuf, mtu);
+    if ((ret = ptls_send(tls, &sendbuf, data->base, payload_size) != 0)
         return ret;
     assert(!sendbuf.is_allocated);
     assert(sendbuf.base == rawbuf);
-    return send_fully(fd, rawbuf, sendbuf.len);
+
+    // adjust the data range
+    data->base += payload_size;
+    data->len -= payload_size;
+
+    // actually send the data
+    return send_fully(fd, rawbuf, sendbuf.off);
 }
 ```
 
