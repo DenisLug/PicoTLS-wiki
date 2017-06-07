@@ -15,7 +15,7 @@ The minicrypto backend uses [micro-ecc](https://github.com/kmackay/micro-ecc) an
 * [Performing a Handshake](#performing-a-handshake)
 * [Sending Data](#sending-data)
 * [Receiving Data](#receiving-data)
-* Sending an Alert
+* [Sending an Alert](#sending-an-alert)
 * Resumption
 * Using Early Data
 
@@ -273,5 +273,6 @@ int handle_input(ptls_t *tls, const uint8_t *input, size_t input_size)
 ## Sending an Alert
 
 `ptls_send_alert` function can be used for sending an alert.
-If an error occurs during handshake, `ptls_handshake` will implicitly call the function to notify the peer of the error that has occurred.
+
+If something goes wrong during handshake, `ptls_handshake` will implicitly call the function to notify the peer of the error that has occurred.
 The application is responsible for calling the function for sending an alert in case of other occasions (including graceful shutdown of a TLS connection).
