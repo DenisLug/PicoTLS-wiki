@@ -29,5 +29,40 @@ The second argument of the function is a pointer to a X509 store that contains t
 ```c
 ptls_openssl_verify_certificate_t verifier;
 ptls_openssl_init_verify_certificate(&verifier, NULL);
-ctx.verify_certificate = &verifier;
+ctx.verify_certificate = &verifier.super;
+```
+
+### Initializing a Server Context
+
+If you are implementing a server, you need to setup the `certificates` property (which is a list of binary octets repesenting each piece of certificate) and a `sign_certificate` callback.
+
+The example below shows how you can use OpenSSL to load a chain of PEM-encoded certificates.
+ 
+```c
+static ptls_iovec_t certs[16];
+size_t count = 0;
+FILE *fp = fopen("cert-chain.pem", "rb");
+assert(fp != NULL);
+X509 *cert;
+while ((cert = PEM_read_X509(fp, NULL, NULL, NULL)) != NULL) {
+    ptls_iovec_t *dst = certs + count++;
+    dst->len = i2d_X509(cert, &dst->base);
+}
+fclose(fp);
+ctx.certificates.list = certs;
+ctx.certificates.count = count;
+```
+
+The code below shows how you can setup a `sign_certificate` object using OpenSSL.
+
+```c
+static ptls_openssl_sign_certificate_t signer;
+FILE *fp = fopen(optarg, "rb");
+assert(fp != NULL);
+EVP_PKEY *pkey = PEM_read_PrivateKey(fp, NULL, NULL, NULL);
+assert(pkey != NULL);
+ptls_openssl_init_sign_certificate(&signer, pkey);
+EVP_PKEY_free(pkey);
+ctx.sign_certificate = &signer.super;
+fclose(fp);
 ```
