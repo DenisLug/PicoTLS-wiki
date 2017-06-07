@@ -6,7 +6,8 @@
   * [Initializing a Server Context](#initializing-a-server-context)
 * [Creating / Destroying a Connection Object](#creating--destroying-a-connection-object)
 * [Performing a Handshake](#performing-a-handshake)
-* Send / Receive
+* [Sending Data](#sending-data)
+* Receiving Data
 * Sending an Alert
 * Resumption
 * Using Early Data
@@ -171,3 +172,17 @@ if (ret == 0) {
 ```
 
 The last argument of `ptls_handshake` can be used to set and / or obtain additional information related to the handshake (e.g. use of session ticket, handle TLS extensions).
+
+## Sending Data
+
+`pls_send` accepts a input block and appends encrypted output to the send buffer (as more than one TLS record).
+
+```c
+uint8_t *input = ...;
+size_t input_len = ...;
+
+int ret = ptls_send(tls, &sendbuf, input, input_size);
+assert(ret == 0);
+send_fully(fd, sendbuf.base, sendbuf.off);
+ptls_buffer_dispose(&sendbuf);
+```
