@@ -1,6 +1,6 @@
 ## Table of Contents
 
-* Initializing the Context
+* [Initializing the Context](#Initializing_the_Context)
  * Initializing a Client Context
  * Initializing a Server Context
 * Creating / Destroying a Connection Object
