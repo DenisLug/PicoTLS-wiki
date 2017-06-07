@@ -5,7 +5,7 @@
   * [Initializing a Client Context](#initializing-a-client-context)
   * [Initializing a Server Context](#initializing-a-server-context)
 * [Creating / Destroying a Connection Object](#creating--destroying-a-connection-object)
-* Performing a Handshake
+* [Performing a Handshake](#performing-a-handshake)
 * Send / Receive
 * Sending an Alert
 * Resumption
@@ -162,9 +162,11 @@ do {
 } while (ret == PTLS_ERROR_IN_PROGRESS);
 
 if (ret == 0) {
-    // handshake succeeded (and we might have some application data after
-    // recvbuf + roff
+    // handshake succeeded (we might have some application data after
+    // recvbuf + roff)
 } else {
     // handshake failed
 }
 ```
+
+The last argument of `ptls_handshake` can be used to set and / or obtain additional information related to the handshake (e.g. use of session ticket, handle TLS extensions).
