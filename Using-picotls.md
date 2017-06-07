@@ -87,3 +87,16 @@ EVP_PKEY_free(pkey);
 ctx.sign_certificate = &signer.super;
 fclose(fp);
 ```
+
+## Creating / Destroying a Connection Object
+
+The `ptls_new` function creates an object for handling a TLS connection.
+The first argument is the pointer to the context.
+The second argument is a boolean indicating the side of the connection (0: client, 1 : server).
+
+```c
+ptls_t *conn = ptls_new(&ctx, is_server);
+```
+
+`ptls_free` should be called to release the resources allocated for the connection.
+Note that you need to call `ptls_send_alert` to send a closure alert before closing the underlying connection and freeing the resources.
