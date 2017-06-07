@@ -105,4 +105,8 @@ Note that you need to call `ptls_send_alert` to send a closure alert before clos
 
 `ptls_handshake` function performs the handshake. It consumes _some_ of the supplied input, and optionally pushes some response to the send buffer which is also supplied as an argument to the function.
 
-The input must be zero-sized for the first call to the handshake on the client-side, since it is the responsibility of the client to start the handshake.
+The input must be zero-sized for the first call to the handshake function on the client-side, since it is the responsibility of the client to start the handshake.
+
+The output buffer is supplied as a pointer to `ptls_buffer_t`.
+`ptls_buffer_init` is the function that initializes the buffer object.
+The object either contains a buffer that is supplied from the application (by passing a non-zero sized buffer as an argument to `ptls_buffer_init`), or a dynamically allocated buffer managed by itself. In case of the latter, the `is_allocated` flag of the object is set to a non-zero value, and the application is responsible for calling `ptls_buffer_dispose` so that the allocated chunk of memory can be freed.
