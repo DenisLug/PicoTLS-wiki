@@ -223,7 +223,19 @@ if (ret == 0) {
 }
 ```
 
-The last argument of `ptls_handshake` can be used to set and / or obtain additional information related to the handshake (e.g. use of session ticket, handle TLS extensions).
+### Handshake Properties
+
+The last argument of `ptls_handshake` is an optional pointer to `ptls_handshake_properties_t`, which is used for setting and / or obtaining additional information related to the handshake.
+
+At the time of this writing, it can be used to set or obtain the following properties:
+
+* client-only
+  * ALPN offerings to be sent (`client.negotiated_protocols`)
+  * session ticket to be sent (`client.session_ticket`)
+  * amount of early data that can be sent (`client.max_early_data_size`)
+  * whether if early data has been accepted by peer (`client.early_data_accepted_by_peer)
+* server-only
+  * PSK binder being selected
 
 ## Sending Data
 
