@@ -13,6 +13,7 @@ The minicrypto backend uses [micro-ecc](https://github.com/kmackay/micro-ecc) an
   * [Initializing a Server Context](#initializing-a-server-context)
 * [Creating / Destroying a Connection Object](#creating--destroying-a-connection-object)
 * [Performing a Handshake](#performing-a-handshake)
+  * [Handshake Properties](#handshake-properties)
 * [Sending Data](#sending-data)
 * [Receiving Data](#receiving-data)
 * [Sending an Alert](#sending-an-alert)
