@@ -234,15 +234,27 @@ A server can obtain the value of the extension provided by the client by calling
 
 The last argument of `ptls_handshake` is an optional pointer to `ptls_handshake_properties_t`, which is used for setting and / or obtaining additional information related to the handshake.
 
-At the time of this writing, it can be used to set or obtain the following properties:
+It can be used to set or obtain the following properties, as well as for sending / receiving arbitrary extensions.
 
 * client-only
   * ALPN offerings to be sent (`client.negotiated_protocols`)
   * session ticket to be sent (`client.session_ticket`)
   * amount of early data that can be sent (`client.max_early_data_size`)
-  * whether if early data has been accepted by peer (`client.early_data_accepted_by_peer)
+  * whether if early data has been accepted by peer (`client.early_data_accepted_by_peer`)
 * server-only
   * PSK binder being selected
+
+#### Sending Arbitrary Extensions
+
+An endpoint can specify arbitrary extensions that should be sent to the peer, by setting an array of `ptls_raw_extensions_t` to the `additional_extensions` field of `ptls_handshake_properties_t`.
+The array is terminated with an extension type of `UINT16_MAX`.
+If the endpoint is the client, the extensions are sent as part of ClientHello.
+If the endpoint is the server, the extensions are sent as part of EncryptedExtensions.
+
+To receive such extensions, an endpoint should set two callbacks `collect_extension`, `collected_extensions`.
+The `collect_extension` callback accepts an extension type that has been sent by the peer as an argument, and should return a boolean value indicating if the extension should be recorded.
+After receiving all extensions (and recording the extensions that were deemed necessary by the `collect_extension` callback), picotls calls the `collected_extensions` callback, supplying the list of extensions that have been recorded as the argument (the list is terminated with a type of `UINT16_MAX`).
+The TLS handshake will continue if the `collected_extensions` callback return zero; otherwise the handshake is aborted using the value returned by the callback as the error code that is being sent to the peer as an TLS Alert.
 
 ## Sending Data
 
