@@ -15,6 +15,7 @@ The minicrypto backend uses [micro-ecc](https://github.com/kmackay/micro-ecc) an
 * [Performing a Handshake](#performing-a-handshake)
   * [Server Name Indication](#server-name-indication)
   * [Handshake Properties](#handshake-properties)
+   * [Sending / Receiving Arbitrary Extensions](#sending-receiving-arbitrary-extensions)
 * [Sending Data](#sending-data)
 * [Receiving Data](#receiving-data)
 * [Sending an Alert](#sending-an-alert)
@@ -244,7 +245,7 @@ It can be used to set or obtain the following properties, as well as for sending
 * server-only
   * PSK binder being selected
 
-#### Sending Arbitrary Extensions
+#### Sending / Receiving Arbitrary Extensions
 
 An endpoint can specify arbitrary extensions that should be sent to the peer, by setting an array of `ptls_raw_extensions_t` to the `additional_extensions` field of `ptls_handshake_properties_t`.
 The array is terminated with an extension type of `UINT16_MAX`.
