@@ -15,7 +15,7 @@ The minicrypto backend uses [micro-ecc](https://github.com/kmackay/micro-ecc) an
 * [Performing a Handshake](#performing-a-handshake)
   * [Server Name Indication](#server-name-indication)
   * [Handshake Properties](#handshake-properties)
-   * [Sending / Receiving Arbitrary Extensions](#sending-receiving-arbitrary-extensions)
+   * [Sending / Receiving Arbitrary Extensions](#sending--receiving-arbitrary-extensions)
 * [Sending Data](#sending-data)
 * [Receiving Data](#receiving-data)
 * [Sending an Alert](#sending-an-alert)
