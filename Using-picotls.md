@@ -244,6 +244,7 @@ It can be used to set or obtain the following properties, as well as for sending
   * whether if early data has been accepted by peer (`client.early_data_accepted_by_peer`)
 * server-only
   * PSK binder being selected
+  * HRR/Cookies behavior
 
 #### Sending / Receiving Arbitrary Extensions
 
@@ -256,6 +257,30 @@ To receive such extensions, an endpoint should set two callbacks `collect_extens
 The `collect_extension` callback accepts an extension type that has been sent by the peer as an argument, and should return a boolean value indicating if the extension should be recorded.
 After receiving all extensions (and recording the extensions that were deemed necessary by the `collect_extension` callback), picotls calls the `collected_extensions` callback, supplying the list of extensions that have been recorded as the argument (the list is terminated with a type of `UINT16_MAX`).
 The TLS handshake will continue if the `collected_extensions` callback return zero; otherwise the handshake is aborted using the value returned by the callback as the error code that is being sent to the peer as an TLS Alert.
+
+#### Forcing the server to verify cookies during handshake
+
+In TLS 1.3, the cookies mechanism is design to force a three-ways handshake before committing significant server resource.
+This is mostly useful for protocol such as QUIC or DTLS that use TLS 1.3 over UDP. Adversaries could try sending large
+numbers of UDP packets containing a "Client Hello", possibly with a forged source address.
+The server that performs costly crypto operations for each packet would be quickly overwhelmed.
+With the cookies mechanism, the server responds to each incoming client hello with a reject message containing
+a "cookie" extension. Good clients repeat the Client hello by including a copy of the cookie, but bad clients that
+use forged addresses cannot receive the cookie and repeat it.
+
+The picotls servers will use the cookies mechanism is directed to do so by flags in the handshake properties (ptls_handshake_properties_t):
+
+ * server.cookie.enforce_use - if the server should enforce the client to do a stateless retry
+ * server.cookie.key - secret used for signing / verifying the cookie (internally uses HMAC)
+ * server.cookie.additional_data - additional data to be used for signing / verification
+
+The additional data should include for example the source IP Address and port number of the incoming message, and
+possibly also protocol specific identifiers such as connection ID in QUIC.
+
+Note the on the client side picotls automatically support the HRR/cookies mechanism. If it receives an HRR, the
+picotls client will learn the cookie and include it in the repeated client hello. 
+
+
 
 ## Sending Data
 
