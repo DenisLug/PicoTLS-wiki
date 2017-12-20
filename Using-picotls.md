@@ -16,12 +16,13 @@ The minicrypto backend uses [micro-ecc](https://github.com/kmackay/micro-ecc) an
   * [Server Name Indication](#server-name-indication)
   * [Handshake Properties](#handshake-properties)
    * [Sending / Receiving Arbitrary Extensions](#sending-receiving-arbitrary-extensions)
+   * [Forcing the server to verify cookies during handshake](#forcing-the-server-to-verify-cookies-during-handshake)
 * [Sending Data](#sending-data)
 * [Receiving Data](#receiving-data)
 * [Sending an Alert](#sending-an-alert)
 * [Resumption](#Resumption)
-   * [Enabling Resumption Server Side](#enabling-resumption-server-side)
-   * [Enabling Resumption Client Side](#enabling-resumption-client-side)
+  * [Enabling Resumption Server Side](#enabling-resumption-server-side)
+  * [Enabling Resumption Client Side](#enabling-resumption-client-side)
 * Using Early Data
 * Error Codes
 
