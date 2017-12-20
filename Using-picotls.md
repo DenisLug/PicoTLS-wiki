@@ -15,11 +15,13 @@ The minicrypto backend uses [micro-ecc](https://github.com/kmackay/micro-ecc) an
 * [Performing a Handshake](#performing-a-handshake)
   * [Server Name Indication](#server-name-indication)
   * [Handshake Properties](#handshake-properties)
-   * [Sending / Receiving Arbitrary Extensions](#sending--receiving-arbitrary-extensions)
+   * [Sending / Receiving Arbitrary Extensions](#sending-receiving-arbitrary-extensions)
 * [Sending Data](#sending-data)
 * [Receiving Data](#receiving-data)
 * [Sending an Alert](#sending-an-alert)
-* Resumption
+* [Resumption](#Resumption)
+   * [Enabling Resumption Server Side](#enabling-resumption-server-side)
+   * [Enabling Resumption Client Side](#enabling-resumption-client-side)
 * Using Early Data
 * Error Codes
 
@@ -280,33 +282,6 @@ possibly also protocol specific identifiers such as connection ID in QUIC.
 Note the on the client side picotls automatically support the HRR/cookies mechanism. If it receives an HRR, the
 picotls client will learn the cookie and include it in the repeated client hello. 
 
-### Session Resume
-
-Session resume for TLS 1.3 is supported on both client and server side.
-
-#### Enabling Session Resume Server Side
-
-To enable session resume on the server, you need to provide an "encrypt ticket" call back. This requires creating an encrypt ticket callback descriptor. This is a memory blob, whose first bytes correspond to a "ptls_encrypt_ticket_t" structure, and the optional next bytes encode application specific parameters. The "ptls_encrypt_ticket_t" structure has one member (cb), which should point at the callback function, defined as:
-~~~
-int (* cb)(ptls_encrypt_ticket_t * encrypt_ticket_ctx,
-    ptls_t *tls, int is_encrypt, ptls_buffer_t *dst, ptls_iovec_t src);
-~~~
-The code will call this callback when it needs to create a ticket (is_encrypt = 0) or when it needs to decrypt an incoming ticket (is_encrypt = 1). The "encrypt_ticket_ctx" parameter will point to the descriptor, the "tls" parameter to the tls connection context, the dst parameter to the buffer that receives the encrypted or decrypted ticket, and the src parameter to the ticket before encryption (is_encrypt = 0) or before the required decryption (is_encrypt = 1).
-
-The descriptor must be documented in the "encrypt_ticket" parameter to the server TLS context. In addition, you need to also enter values in this context for "ticket_lifetime" (in seconds, must be less than 7 days), "require_dhe_on_psk" (1 if you want to force [EC]DH negotiation of a new key for each session resume), and "max_early_data_size" (in bytes).
-
-#### Enabling Session Resume Client Side
-
-Client side session resume is enabled by documenting a "save ticket" callback, which will be activated when the server provides a new session ticket. This requires creating a save ticket callback descriptor. This is a memory blob, whose first bytes correspond to a "ptls_save_ticket_t" structure, and the optional next bytes encode application specific parameters. The "ptls_save_ticket_t" structure has one member (cb), which should point at the callback function, defined as:
-~~~
-int (*cb)(ptls_save_ticket_t * save_ticket_ctx, ptls_t *tls, ptls_iovec_t input)
-~~~
-When the code activates this callback, the "save_ticket_ctx" parameter will point to the descriptor, the "tls" parameter to the tls connection context, and the input parameter will point to the ticket received from the server.
-
-When the client wants to resume a session, it needs to retrieve an appropriate ticket, previously received from the same server -- same SNI, same ALPN. Tickets have a limited lifetime, which is documented in the ticket per the TLS 1.3 specification. If there is a ticket available, the client should document it in the "session_ticket" variable of the client handshake parameters. The client should also provide a pointer to an integer (size_t *)  that will receive the "maximum early data" accepted by the server in the server, in the "max_early_data_size" variable of the client handshake parameters.
-
-After establishing a session, the client can use the function "ptls_is_psk_handshake(tls)" to check whether the handshake used the session ticket, or fell back to alternative credentials.
-
 ## Sending Data
 
 `ptls_send` accepts a input block and appends encrypted output to the send buffer (as more than one TLS record).
@@ -360,3 +335,30 @@ int handle_input(ptls_t *tls, const uint8_t *input, size_t input_size)
 
 If something goes wrong during handshake, `ptls_handshake` will implicitly call the function to notify the peer of the error that has occurred.
 The application is responsible for calling the function for sending an alert in case of other occasions (including graceful shutdown of a TLS connection).
+
+# Resumption
+
+Resumption for TLS 1.3 is supported on both client and server side.
+
+## Enabling Resumption Server Side
+
+To enable resumption on the server, you need to provide an "encrypt ticket" call back. This requires creating an encrypt ticket callback descriptor. This is a memory blob, whose first bytes correspond to a "ptls_encrypt_ticket_t" structure, and the optional next bytes encode application specific parameters. The "ptls_encrypt_ticket_t" structure has one member (cb), which should point at the callback function, defined as:
+~~~
+int (* cb)(ptls_encrypt_ticket_t * encrypt_ticket_ctx,
+    ptls_t *tls, int is_encrypt, ptls_buffer_t *dst, ptls_iovec_t src);
+~~~
+The code will call this callback when it needs to create a ticket (is_encrypt = 0) or when it needs to decrypt an incoming ticket (is_encrypt = 1). The "encrypt_ticket_ctx" parameter will point to the descriptor, the "tls" parameter to the tls connection context, the dst parameter to the buffer that receives the encrypted or decrypted ticket, and the src parameter to the ticket before encryption (is_encrypt = 0) or before the required decryption (is_encrypt = 1).
+
+The descriptor must be documented in the "encrypt_ticket" parameter to the server TLS context. In addition, you need to also enter values in this context for "ticket_lifetime" (in seconds, must be less than 7 days), "require_dhe_on_psk" (1 if you want to force [EC]DH negotiation of a new key for each session resume), and "max_early_data_size" (in bytes).
+
+## Enabling Resumption Client Side
+
+Client side resumption is enabled by documenting a "save ticket" callback, which will be activated when the server provides a new session ticket. This requires creating a save ticket callback descriptor. This is a memory blob, whose first bytes correspond to a "ptls_save_ticket_t" structure, and the optional next bytes encode application specific parameters. The "ptls_save_ticket_t" structure has one member (cb), which should point at the callback function, defined as:
+~~~
+int (*cb)(ptls_save_ticket_t * save_ticket_ctx, ptls_t *tls, ptls_iovec_t input)
+~~~
+When the code activates this callback, the "save_ticket_ctx" parameter will point to the descriptor, the "tls" parameter to the tls connection context, and the input parameter will point to the ticket received from the server.
+
+When the client wants to resume a session, it needs to retrieve an appropriate ticket, previously received from the same server -- same SNI, same ALPN. Tickets have a limited lifetime, which is documented in the ticket per the TLS 1.3 specification. If there is a ticket available, the client should document it in the "session_ticket" variable of the client handshake parameters. The client should also provide a pointer to an integer (size_t *)  that will receive the "maximum early data" accepted by the server in the server, in the "max_early_data_size" variable of the client handshake parameters.
+
+After establishing a session, the client can use the function "ptls_is_psk_handshake(tls)" to check whether the handshake used the session ticket, or fell back to alternative credentials.
