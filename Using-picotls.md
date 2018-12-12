@@ -44,7 +44,7 @@ The following example illustrates the easiest way of using `ptls_buffer_t`.
 ptls_buffer_t sendbuf;
 
 // supply a zero-sized application buffer (i.e. request use of dynamically allocated buffer)
-ptls_buffer_init(&sendbuf, "", 0);
+ptls_buffer_init(&sendbuf, const_cast<char*>(""), 0);
 // encrypt application data
 ret = ptls_send(tls, &sendbuf, "hello world", 11);
 // send encrypted data
@@ -101,6 +101,7 @@ memset(&ctx, 0, sizeof(ctx));
 ctx.random_bytes = ptls_openssl_random_bytes;
 ctx.key_exchanges = ptls_openssl_key_exchanges;
 ctx.cipher_suites = ptls_openssl_cipher_suites;
+ctx.get_time = &ptls_get_time;
 ```
 
 ### Initializing a Client Context
@@ -108,7 +109,7 @@ ctx.cipher_suites = ptls_openssl_cipher_suites;
 If you are implementing a client, you should also setup the `verify_certificate` property.
 For OpenSSL backend, you can do it by calling `ptls_openssl_init_verify_certificate` and then setting the pointer to the initialized object as a member of the context.
 The second argument of the function is a pointer to a X509 store that contains the trusted CAs. If the supplied value is NULL, the default store will be used.
-
+Set the `verify_certificate` property to NULL if you do not have a legitimate certificate and need to prevent verification.
 ```c
 ptls_openssl_verify_certificate_t verifier;
 ptls_openssl_init_verify_certificate(&verifier, NULL);
@@ -175,7 +176,7 @@ The following code snippet starts a TLS handshake on the client side (i.e. sends
 ptls_buffer_t sendbuf;
 // initialize sendbuf to use dynamically allocated buffer (by supplying a zero-
 // sized buffer)
-ptls_buffer_init(&sendbuf, "", 0);
+ptls_buffer_init(&sendbuf, const_cast<char*>(""), 0);
 // start the handshake
 int ret = ptls_handshake(tls, &sendbuf, NULL, NULL, NULL);
 assert(ret == PTLS_ERROR_IN_PROGRESS);
@@ -206,7 +207,7 @@ do {
     // completes or when the function consumes all input
     roff = 0;
     do {
-        ptls_buffer_init(&sendbuf, "", 0);
+        ptls_buffer_init(&sendbuf, const_cast<char*>(""), 0);
         size_t consumed = rret - roff;
         ret = ptls_handshake(tls, &sendbuf, recvbuf + roff, &consumed, NULL);
         roff += consumed;
@@ -313,7 +314,7 @@ int handle_input(ptls_t *tls, const uint8_t *input, size_t input_size)
     if (input_size == 0)
         return 0;
 
-    ptls_buffer_init(&plaintextbuf, "", 0);
+    ptls_buffer_init(&plaintextbuf, const_cast<char*>(""), 0);
 
     do {
         size_t consumed = input_size - input_off;
